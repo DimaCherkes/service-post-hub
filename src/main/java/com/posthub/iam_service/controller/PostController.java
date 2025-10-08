@@ -1,7 +1,7 @@
 package com.posthub.iam_service.controller;
 
 import com.posthub.iam_service.service.PostService;
-import com.posthub.iam_service.service.PostServiceImpl;
+import com.posthub.iam_service.service.impl.PostServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
