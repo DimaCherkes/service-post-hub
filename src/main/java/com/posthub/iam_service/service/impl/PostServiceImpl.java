@@ -1,18 +1,41 @@
 package com.posthub.iam_service.service.impl;
 
+import com.posthub.iam_service.mapper.PostMapper;
+import com.posthub.iam_service.model.constants.ApiErrorMessage;
+import com.posthub.iam_service.model.dto.post.PostDTO;
+import com.posthub.iam_service.model.entity.Post;
+import com.posthub.iam_service.model.exception.DataExistException;
+import com.posthub.iam_service.model.exception.NotFoundException;
+import com.posthub.iam_service.model.request.post.PostRequest;
+import com.posthub.iam_service.repository.PostRepository;
 import com.posthub.iam_service.service.PostService;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
+@RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
-    private final List<String> posts = new ArrayList<>();
+    private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
     @Override
-    public void createPost(String postContent) {
-        posts.add(postContent);
+    public PostDTO getById(@NotNull Integer id) {
+        return postRepository.findById(id)
+                .map(postMapper::toPostDTO)
+                .orElseThrow(() -> new NotFoundException(ApiErrorMessage.POST_NOT_FOUND_BY_ID.getMessage(id)));
     }
+
+    @Override
+    public PostDTO createPost(@NotNull PostRequest postRequest) {
+        if (postRepository.existsByTitle(postRequest.getTitle()))
+            throw new DataExistException(ApiErrorMessage.POST_ALREADY_EXISTS.getMessage(postRequest.getTitle()));
+
+        Post post = postMapper.createPost(postRequest);
+        Post savedPost = postRepository.save(post);
+        return postMapper.toPostDTO(savedPost);
+    }
+
+
 }

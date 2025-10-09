@@ -1,37 +1,43 @@
 package com.posthub.iam_service.controller;
 
+import com.posthub.iam_service.model.constants.ApiConstants;
+import com.posthub.iam_service.model.constants.ApiLogMessage;
+import com.posthub.iam_service.model.dto.post.PostDTO;
+import com.posthub.iam_service.model.request.post.PostRequest;
+import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.service.PostService;
-import com.posthub.iam_service.service.impl.PostServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import com.posthub.iam_service.utils.ApiUtils;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
+@Slf4j
 @RestController
-@RequestMapping("/posts")
+@RequiredArgsConstructor
+@RequestMapping("${end.point.posts}")
 public class PostController {
 
     private final PostService postService;
 
-    @Autowired
-    public PostController(PostServiceImpl postService) {
-        this.postService = postService;
+    @GetMapping("${end.point.id}")
+    public ResponseEntity<IamResponse<PostDTO>> getPostById(
+            @PathVariable(name = "id") Integer postId) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
+
+        PostDTO postDto = postService.getById(postId);
+        return ResponseEntity.ok(IamResponse.createSuccessful(postDto)); // is it better to return IamResponse in Service?
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createPost(@RequestBody Map<String, Object> requestBody) {
-        String title = requestBody.get("title").toString();
-        String content = requestBody.get("content").toString();
+    @PostMapping("${end.point.create}")
+    public ResponseEntity<IamResponse<PostDTO>> createPost(
+            @RequestBody @Valid PostRequest postRequest) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
 
-        String postContent = "Title" + title + "\nContent: " + content + "\n";
-
-        postService.createPost(postContent);
-
-        return new ResponseEntity<>("Post created with title: " + title, HttpStatus.OK);
+        PostDTO postDto = postService.createPost(postRequest);
+        return ResponseEntity.ok(IamResponse.createSuccessful(ApiConstants.CREATE_SUCCESSFUL, postDto)); // is it better to return IamResponse in Service?
     }
+
+
 }
