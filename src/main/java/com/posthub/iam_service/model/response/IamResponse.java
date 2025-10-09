@@ -14,6 +14,10 @@ public record IamResponse<R extends Serializable>(
         return new IamResponse<>(StringUtils.EMPTY, payload, true);
     }
 
+    public static <R extends Serializable> IamResponse<R> createSuccessful(String message, R payload) {
+        return new IamResponse<>(message, payload, true);
+    }
+    
     public static <R extends Serializable> IamResponse<R> createWithError(String message) {
         return new IamResponse<>(message, null, false);
     }

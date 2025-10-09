@@ -3,7 +3,9 @@ package com.posthub.iam_service.service.impl;
 import com.posthub.iam_service.mapper.PostMapper;
 import com.posthub.iam_service.model.constants.ApiErrorMessage;
 import com.posthub.iam_service.model.dto.post.PostDTO;
+import com.posthub.iam_service.model.entity.Post;
 import com.posthub.iam_service.model.exception.NotFoundException;
+import com.posthub.iam_service.model.request.post.PostRequest;
 import com.posthub.iam_service.repository.PostRepository;
 import com.posthub.iam_service.service.PostService;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +24,13 @@ public class PostServiceImpl implements PostService {
         return postRepository.findById(id)
                 .map(postMapper::toPostDTO)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.POST_NOT_FOUND_BY_ID.getMessage(id)));
+    }
+
+    @Override
+    public PostDTO createPost(@NotNull PostRequest postRequest) {
+        Post post = postMapper.createPost(postRequest);
+        Post savedPost = postRepository.save(post);
+        return postMapper.toPostDTO(savedPost);
     }
 
 }
