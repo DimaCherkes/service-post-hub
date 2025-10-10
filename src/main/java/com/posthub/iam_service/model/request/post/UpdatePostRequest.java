@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostRequest {
+public class UpdatePostRequest {
 
     @NotBlank(message = "Title cannot be empty")
     private String title;

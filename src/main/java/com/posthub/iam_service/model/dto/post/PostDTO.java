@@ -1,6 +1,5 @@
 package com.posthub.iam_service.model.dto.post;
 
-import com.posthub.iam_service.model.entity.Post;
 import lombok.Builder;
 
 import java.io.Serializable;
@@ -12,16 +11,7 @@ public record PostDTO (
         String title,
         String content,
         Integer likes,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) implements Serializable {
-
-    public static PostDTO mapToDto(Post post) {
-        return PostDTO.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .likes(post.getLikes())
-                .createdAt(post.getCreatedAt())
-                .build();
-    }
 }
