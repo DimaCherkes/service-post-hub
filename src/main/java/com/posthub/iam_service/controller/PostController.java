@@ -3,15 +3,18 @@ package com.posthub.iam_service.controller;
 import com.posthub.iam_service.model.constants.ApiConstants;
 import com.posthub.iam_service.model.constants.ApiLogMessage;
 import com.posthub.iam_service.model.dto.post.PostDTO;
+import com.posthub.iam_service.model.dto.post.PostSearchDTO;
 import com.posthub.iam_service.model.request.post.NewPostRequest;
 import com.posthub.iam_service.model.request.post.UpdatePostRequest;
 import com.posthub.iam_service.model.response.IamResponse;
+import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.service.PostService;
 import com.posthub.iam_service.utils.ApiUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +62,17 @@ public class PostController {
 
         postService.softDeletePost(postId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("${end.point.all}")
+    public ResponseEntity<IamResponse<PaginationResponse<PostSearchDTO>>> getAllPosts(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
+
+        Pageable pageable = PageRequest.of(page, limit);
+        IamResponse<PaginationResponse<PostSearchDTO>> response = postService.findAllPosts(pageable);
+        return ResponseEntity.ok(response);
     }
 
 }
