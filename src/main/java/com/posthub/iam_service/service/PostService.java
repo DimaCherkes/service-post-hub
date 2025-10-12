@@ -1,12 +1,24 @@
 package com.posthub.iam_service.service;
 
 import com.posthub.iam_service.model.dto.post.PostDTO;
-import com.posthub.iam_service.model.request.post.PostRequest;
+import com.posthub.iam_service.model.dto.post.PostSearchDTO;
+import com.posthub.iam_service.model.request.post.NewPostRequest;
+import com.posthub.iam_service.model.request.post.UpdatePostRequest;
+import com.posthub.iam_service.model.response.IamResponse;
+import com.posthub.iam_service.model.response.PaginationResponse;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Pageable;
 
 public interface PostService {
 
-    PostDTO getById(@NotNull Integer id);
+    PostDTO getById(@NotNull Integer postId);
 
-    PostDTO createPost(@NotNull PostRequest postRequest);
+    PostDTO createPost(@NotNull NewPostRequest newPostRequest);
+
+    PostDTO updatePost(@NotNull Integer postId, @NotNull UpdatePostRequest request);
+
+    void softDeletePost(@NotNull Integer postId);
+
+    IamResponse<PaginationResponse<PostSearchDTO>> findAllPosts(Pageable pageable);
+
 }
