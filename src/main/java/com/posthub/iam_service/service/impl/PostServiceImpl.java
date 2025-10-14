@@ -5,6 +5,7 @@ import com.posthub.iam_service.model.constants.ApiErrorMessage;
 import com.posthub.iam_service.model.dto.post.PostDTO;
 import com.posthub.iam_service.model.dto.post.PostSearchDTO;
 import com.posthub.iam_service.model.entity.Post;
+import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.exception.DataExistException;
 import com.posthub.iam_service.model.exception.NotFoundException;
 import com.posthub.iam_service.model.request.post.NewPostRequest;
@@ -13,6 +14,7 @@ import com.posthub.iam_service.model.request.post.UpdatePostRequest;
 import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.repository.PostRepository;
+import com.posthub.iam_service.repository.UserRepository;
 import com.posthub.iam_service.repository.criteria.PostSearchCriteria;
 import com.posthub.iam_service.service.PostService;
 import jakarta.validation.constraints.NotNull;
@@ -30,6 +32,7 @@ import java.time.LocalDateTime;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final PostMapper postMapper;
 
     @Override
@@ -40,11 +43,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDTO createPost(@NotNull NewPostRequest newPostRequest) {
+    public PostDTO createPost(@NonNull Integer userId, @NotNull NewPostRequest newPostRequest) {
         if (postRepository.existsByTitle(newPostRequest.getTitle()))
             throw new DataExistException(ApiErrorMessage.POST_ALREADY_EXISTS.getMessage(newPostRequest.getTitle()));
 
-        Post post = postMapper.createPost(newPostRequest);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DataExistException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage()));
+
+        Post post = postMapper.createPost(newPostRequest, user);
         Post savedPost = postRepository.save(post);
         return postMapper.toPostDTO(savedPost);
     }
