@@ -44,7 +44,7 @@ public class PostController {
             @RequestBody @Valid NewPostRequest newPostRequest) {
         log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
 
-        PostDTO postDto = postService.createPost(newPostRequest);
+        PostDTO postDto = postService.createPost(1, newPostRequest);
         return ResponseEntity.ok(IamResponse.createSuccessful(ApiConstants.CREATE_SUCCESSFUL, postDto));
     }
 

@@ -15,7 +15,7 @@ public interface PostService {
 
     PostDTO getById(@NotNull Integer postId);
 
-    PostDTO createPost(@NotNull NewPostRequest newPostRequest);
+    PostDTO createPost(@NotNull Integer userId, @NonNull NewPostRequest newPostRequest);
 
     PostDTO updatePost(@NotNull Integer postId, @NotNull UpdatePostRequest request);
 
