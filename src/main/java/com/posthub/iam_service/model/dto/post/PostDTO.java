@@ -8,6 +8,7 @@ public record PostDTO (
         String title,
         String content,
         Integer likes,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String createdBy
 ) implements Serializable {
 }

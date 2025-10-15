@@ -1,0 +1,68 @@
+package com.posthub.iam_service.repository.criteria;
+
+import com.posthub.iam_service.model.entity.Post;
+import com.posthub.iam_service.model.entity.User;
+import com.posthub.iam_service.model.request.user.UserSearchRequest;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+@AllArgsConstructor
+public class UserSearchCriteria implements Specification<Post> {
+
+    private final UserSearchRequest request;
+
+    @Override
+    public Predicate toPredicate(
+            @NonNull Root<Post> root,
+            CriteriaQuery<?> query,
+            @NonNull CriteriaBuilder criteriaBuilder) {
+
+        List<Predicate> predicateList = new ArrayList<>();
+
+        if (Objects.nonNull(request.getUsername()))
+            predicateList.add(criteriaBuilder.like(root.get(User.USERNAME_FIELD), "%" + request.getUsername() + "%"));
+
+        if (Objects.nonNull(request.getEmail()))
+            predicateList.add(criteriaBuilder.like(root.get(User.EMAIL_FIELD), "%" + request.getEmail() + "%"));
+
+        if (Objects.nonNull(request.getRegistrationStatus()))
+            predicateList.add(criteriaBuilder.equal(root.get(User.REGISTRATION_STATUS_FILED), "%" + request.getRegistrationStatus() + "%"));
+
+        if (Objects.nonNull(request.getDeleted()))
+            predicateList.add(criteriaBuilder.equal(root.get(User.DELETED_FIELD), "%" + request.getDeleted() + "%"));
+
+        if (Objects.nonNull(request.getKeyword())) {
+            Predicate keywordPredicate = criteriaBuilder.or(
+                    criteriaBuilder.like(root.get(User.USERNAME_FIELD), "%" + request.getKeyword() + "%"),
+                    criteriaBuilder.like(root.get(User.EMAIL_FIELD), "%" + request.getKeyword() + "%")
+            );
+            predicateList.add(keywordPredicate);
+        }
+
+        sort(root, criteriaBuilder, query);
+
+        return null;
+    }
+
+    private void sort(Root<Post> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query) {
+        if (Objects.nonNull(request.getSortField())) {
+            switch (request.getSortField()) {
+                case USERNAME -> query.orderBy(criteriaBuilder.desc(root.get(User.USERNAME_FIELD)));
+                case EMAIL -> query.orderBy(criteriaBuilder.desc(root.get(User.EMAIL_FIELD)));
+                case CREATION_DATE -> query.orderBy(criteriaBuilder.desc(root.get(User.CREATED_AT_FIELD)));
+                default -> query.orderBy(criteriaBuilder.desc(root.get(Post.ID_FIELD)));
+            }
+        } else {
+            query.orderBy(criteriaBuilder.desc(root.get(Post.ID_FIELD)));
+        }
+    }
+}

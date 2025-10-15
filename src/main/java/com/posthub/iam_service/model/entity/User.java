@@ -14,6 +14,12 @@ import java.util.List;
 @Getter
 @Setter
 public class User {
+    public static final String ID_FIELD = "id";
+    public static final String USERNAME_FIELD = "username";
+    public static final String EMAIL_FIELD = "email";
+    public static final String CREATED_AT_FIELD = "createdAt";
+    public static final String REGISTRATION_STATUS_FILED = "registrationStatus";
+    public static final String DELETED_FIELD = "deleted";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

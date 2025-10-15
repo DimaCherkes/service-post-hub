@@ -9,6 +9,7 @@ public record PostSearchDTO(
         String content,
         Integer likes,
         LocalDateTime createdAt,
-        Boolean isDeleted
+        Boolean isDeleted,
+        String createdBy
 ) implements Serializable {
 }

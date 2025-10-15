@@ -21,6 +21,7 @@ CREATE TABLE posts
     updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted    BOOLEAN      NOT NULL DEFAULT FALSE,
     likes      INTEGER      NOT NULL DEFAULT 0,
+    created_by VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     UNIQUE (title)
 );

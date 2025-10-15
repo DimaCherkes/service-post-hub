@@ -95,7 +95,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public IamResponse<PaginationResponse<PostSearchDTO>> searchPosts(@NonNull PostSearchRequest request, Pageable pageable) {
+    public IamResponse<PaginationResponse<PostSearchDTO>> searchPosts(@NotNull PostSearchRequest request, Pageable pageable) {
         Specification<Post> specification = new PostSearchCriteria(request);
         Page<PostSearchDTO> posts = postRepository.findAll(specification, pageable)
                 .map(postMapper::toPostSearchDTO);
