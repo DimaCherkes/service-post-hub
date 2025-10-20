@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
-public class UserSearchCriteria implements Specification<Post> {
+public class UserSearchCriteria implements Specification<User> {
 
     private final UserSearchRequest request;
 
     @Override
     public Predicate toPredicate(
-            @NonNull Root<Post> root,
+            @NonNull Root<User> root,
             CriteriaQuery<?> query,
             @NonNull CriteriaBuilder criteriaBuilder) {
 
@@ -38,7 +38,7 @@ public class UserSearchCriteria implements Specification<Post> {
             predicateList.add(criteriaBuilder.equal(root.get(User.REGISTRATION_STATUS_FILED), "%" + request.getRegistrationStatus() + "%"));
 
         if (Objects.nonNull(request.getDeleted()))
-            predicateList.add(criteriaBuilder.equal(root.get(User.DELETED_FIELD), "%" + request.getDeleted() + "%"));
+            predicateList.add(criteriaBuilder.equal(root.get(User.DELETED_FIELD), request.getDeleted()));
 
         if (Objects.nonNull(request.getKeyword())) {
             Predicate keywordPredicate = criteriaBuilder.or(
@@ -50,10 +50,10 @@ public class UserSearchCriteria implements Specification<Post> {
 
         sort(root, criteriaBuilder, query);
 
-        return null;
+        return criteriaBuilder.and(predicateList.toArray(new Predicate[0]));
     }
 
-    private void sort(Root<Post> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query) {
+    private void sort(Root<User> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query) {
         if (Objects.nonNull(request.getSortField())) {
             switch (request.getSortField()) {
                 case USERNAME -> query.orderBy(criteriaBuilder.desc(root.get(User.USERNAME_FIELD)));

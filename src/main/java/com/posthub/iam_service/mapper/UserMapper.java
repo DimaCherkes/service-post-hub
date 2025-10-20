@@ -6,15 +6,16 @@ import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.enums.RegistrationStatus;
 import com.posthub.iam_service.model.request.user.NewUserRequest;
 import com.posthub.iam_service.model.request.user.UpdateUserRequest;
+import org.hibernate.type.descriptor.DateTimeUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
-    componentModel = "spring",
+        componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-        imports = {RegistrationStatus.class, Object.class}
+        imports = {DateTimeUtils.class, RegistrationStatus.class, Object.class}
 )
 public interface UserMapper {
 

@@ -12,13 +12,17 @@ import com.posthub.iam_service.model.request.user.UpdateUserRequest;
 import com.posthub.iam_service.model.request.user.UserSearchRequest;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.repository.UserRepository;
+import com.posthub.iam_service.repository.criteria.UserSearchCriteria;
 import com.posthub.iam_service.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +32,9 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
+    @Transactional
     public UserDTO getById(@NonNull Integer userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
 
         return userMapper.toDto(user);
@@ -51,18 +56,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO updateUser(Integer userId, UpdateUserRequest request) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
 
         userMapper.updateUser(user, request);
-        User updatedUser = userRepository.save(user);
-        return userMapper.toDto(updatedUser);
+        user.setUpdatedAt(LocalDateTime.now());
+        user = userRepository.save(user);
+
+        return userMapper.toDto(user);
     }
 
     @Override
     @Transactional
     public void softDeleteUser(Integer userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
 
         user.setDeleted(true);
@@ -79,17 +86,28 @@ public class UserServiceImpl implements UserService {
                 new PaginationResponse.Pagination(
                         users.getTotalElements(),
                         pageable.getPageSize(),
-                        pageable.getPageNumber() + 1,
+                        users.getNumber() + 1,
                         users.getTotalPages()
                 )
         );
     }
 
-    // TODO:
     @Override
     public PaginationResponse<UserSearchDTO> searchUsers(UserSearchRequest request, Pageable pageable) {
+        Specification<User> specification = new UserSearchCriteria(request);
 
-        return null;
+        Page<UserSearchDTO> usersPage = userRepository.findAll(specification, pageable)
+                .map(userMapper::toUserSearchDTO);
+
+        return PaginationResponse.<UserSearchDTO>builder()
+                .content(usersPage.getContent())
+                .pagination(PaginationResponse.Pagination.builder()
+                        .total(usersPage.getTotalElements())
+                        .limit(pageable.getPageSize())
+                        .page(usersPage.getNumber() + 1)
+                        .pages(usersPage.getTotalPages())
+                        .build())
+                .build();
     }
 
 }
