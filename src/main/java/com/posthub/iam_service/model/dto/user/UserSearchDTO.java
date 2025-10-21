@@ -15,15 +15,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO implements Serializable {
-
-    private Integer id;
+public class UserSearchDTO implements Serializable {
     private String username;
     private String email;
-    private LocalDateTime created;
-    private LocalDateTime lastLogin;
-
+    private LocalDateTime createdAt;
+    private Boolean isDeleted;
     private RegistrationStatus registrationStatus;
     private List<RoleDTO> roles;
-
 }

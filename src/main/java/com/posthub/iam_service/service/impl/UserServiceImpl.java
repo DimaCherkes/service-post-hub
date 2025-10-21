@@ -3,15 +3,32 @@ package com.posthub.iam_service.service.impl;
 import com.posthub.iam_service.mapper.UserMapper;
 import com.posthub.iam_service.model.constants.ApiErrorMessage;
 import com.posthub.iam_service.model.dto.user.UserDTO;
+import com.posthub.iam_service.model.dto.user.UserSearchDTO;
+import com.posthub.iam_service.model.entity.Role;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.exception.DataExistException;
 import com.posthub.iam_service.model.exception.NotFoundException;
 import com.posthub.iam_service.model.request.user.NewUserRequest;
+import com.posthub.iam_service.model.request.user.UpdateUserRequest;
+import com.posthub.iam_service.model.request.user.UserSearchRequest;
+import com.posthub.iam_service.model.response.PaginationResponse;
+import com.posthub.iam_service.repository.RoleRepository;
 import com.posthub.iam_service.repository.UserRepository;
+import com.posthub.iam_service.repository.criteria.UserSearchCriteria;
 import com.posthub.iam_service.service.UserService;
+import com.posthub.iam_service.service.model.IamServiceUserRole;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -19,10 +36,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public UserDTO getById(@NonNull Integer userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
 
         return userMapper.toDto(user);
@@ -36,9 +56,75 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(newUserRequest.getEmail()))
             throw new DataExistException(ApiErrorMessage.EMAIL_ALREADY_EXISTS.getMessage(newUserRequest.getEmail()));
 
+        // prepare user role
+        Role userRole = roleRepository.findByName(IamServiceUserRole.USER.getRole())
+                .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_ROLE_NOT_FOUND.getMessage()));
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+
         User user = userMapper.createUser(newUserRequest);
+        user.setPassword(passwordEncoder.encode(newUserRequest.getPassword()));
+        user.setRoles(roles);
+
         User persistedUser = userRepository.save(user);
         return userMapper.toDto(persistedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO updateUser(Integer userId, UpdateUserRequest request) {
+        User user = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
+
+        userMapper.updateUser(user, request);
+        user.setUpdatedAt(LocalDateTime.now());
+        user = userRepository.save(user);
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteUser(Integer userId) {
+        User user = userRepository.findByIdAndDeletedFalse(userId)
+                .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
+
+        user.setDeleted(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public PaginationResponse<UserSearchDTO> findAllUsers(Pageable pageable) {
+        Page<UserSearchDTO> users = userRepository.findAll(pageable)
+                .map(userMapper::toUserSearchDTO);
+
+        return new PaginationResponse<>(
+                users.getContent(),
+                new PaginationResponse.Pagination(
+                        users.getTotalElements(),
+                        pageable.getPageSize(),
+                        users.getNumber() + 1,
+                        users.getTotalPages()
+                )
+        );
+    }
+
+    @Override
+    public PaginationResponse<UserSearchDTO> searchUsers(UserSearchRequest request, Pageable pageable) {
+        Specification<User> specification = new UserSearchCriteria(request);
+
+        Page<UserSearchDTO> usersPage = userRepository.findAll(specification, pageable)
+                .map(userMapper::toUserSearchDTO);
+
+        return PaginationResponse.<UserSearchDTO>builder()
+                .content(usersPage.getContent())
+                .pagination(PaginationResponse.Pagination.builder()
+                        .total(usersPage.getTotalElements())
+                        .limit(pageable.getPageSize())
+                        .page(usersPage.getNumber() + 1)
+                        .pages(usersPage.getTotalPages())
+                        .build())
+                .build();
     }
 
 }

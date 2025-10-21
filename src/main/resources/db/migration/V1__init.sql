@@ -21,19 +21,51 @@ CREATE TABLE posts
     updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted    BOOLEAN      NOT NULL DEFAULT FALSE,
     likes      INTEGER      NOT NULL DEFAULT 0,
+    created_by VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     UNIQUE (title)
 );
 
+CREATE TABLE roles
+(
+    id               SERIAL PRIMARY KEY,
+    name             VARCHAR(50) NOT NULL,
+    user_system_role VARCHAR(64) NOT NULL,
+    active           BOOLEAN     NOT NULL DEFAULT true,
+    created_by       VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE users_roles
+(
+    user_id BIGINT NOT NULL,
+    role_id INT    NOT NULL,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (role_id) REFERENCES roles (id)
+);
+
 INSERT INTO users(username, password, email, created_at, updated_at, registration_status, last_login, deleted)
-VALUES ('first_user', 'password1', 'first_user@gmail.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
+VALUES ('super_admin', '$2a$10$81gt1IWoqOPyJ.vRDYu3TOeo.vZSkcZhjCCbT/3ALcRP2yvcMrouq', 'super_admin@gmail.com',
+        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false),
-       ('second_user', 'password2', 'second_user@gmail.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
+       ('admin', '$2a$10$DbYM9oZfDy67/F1EMjxnm.2pXCVzqoeq5MJdcjemzk6z5vyiK0iCG', 'admin@gmail.com',
+        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false),
-       ('third_user', 'password3', 'third_user@gmail.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
+       ('user', '$2a$10$anLiQC3pQugMDDELWf/kR.gOi9cYbG7R0qLwrQgx3kUe.dJJ9431S', 'user@gmail.com',
+        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false);
 
 INSERT INTO posts (user_id, title, content, created_at, updated_at, deleted, likes)
 VALUES (1, 'First Post', 'This is content of first post', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, 10),
        (2, 'Second Post', 'This is content of second post', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, 3);
+
+INSERT INTO roles (name, user_system_role, created_by)
+VALUES ('SUPER_ADMIN', 'SUPER_ADMIN', 'SUPER_ADMIN'),
+       ('ADMIN', 'ADMIN', 'SUPER_ADMIN'),
+       ('USER', 'USER', 'SUPER_ADMIN');
+
+INSERT INTO users_roles (user_id, role_id)
+VALUES (1, 1),
+       (2, 2),
+       (3, 3);
 
