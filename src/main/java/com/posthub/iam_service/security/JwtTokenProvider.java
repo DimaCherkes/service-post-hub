@@ -1,0 +1,93 @@
+package com.posthub.iam_service.security;
+
+import com.posthub.iam_service.model.entity.Role;
+import com.posthub.iam_service.model.entity.User;
+import com.posthub.iam_service.service.model.AuthenticationConstants;
+import io.jsonwebtoken.*;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Component
+public class JwtTokenProvider {
+    private final SecretKey secretKey;
+    private final Long jwtValidityInMilliseconds;
+
+    public JwtTokenProvider(@Value("${jwt.secret}") SecretKey secretKey,
+                            @Value("${jwt.expiration}") Long jwtValidityInMilliseconds) {
+        this.secretKey = secretKey;
+        this.jwtValidityInMilliseconds = jwtValidityInMilliseconds;
+    }
+
+    public String generateToken(@NonNull User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(AuthenticationConstants.USER_ID, user.getId());
+        claims.put(AuthenticationConstants.USERNAME, user.getUsername());
+        claims.put(AuthenticationConstants.USER_EMAIL, user.getEmail());
+        claims.put(AuthenticationConstants.USER_REGISTRATION_STATUS, user.getRegistrationStatus());
+        claims.put(AuthenticationConstants.LAST_UPDATE, LocalDateTime.now());
+
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .toList();
+        claims.put(AuthenticationConstants.ROLE, roles);
+
+        return createToken(claims, user.getEmail());
+    }
+
+    public String refreshToken(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        return createToken(claims, claims.getSubject());
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jws<Claims> claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String getEmail(String token) {
+        return getAllClaimsFromToken(token).getSubject();
+    }
+
+    public List<String> getRoles(String token) {
+        return getAllClaimsFromToken(token).get(AuthenticationConstants.ROLE, List.class);
+    }
+
+    private Claims getAllClaimsFromToken(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtValidityInMilliseconds))
+                .signWith(secretKey, SignatureAlgorithm.ES512)
+                .compact();
+    }
+}
