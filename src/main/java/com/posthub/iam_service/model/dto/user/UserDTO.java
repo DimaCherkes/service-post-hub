@@ -1,17 +1,29 @@
 package com.posthub.iam_service.model.dto.user;
 
+import com.posthub.iam_service.model.dto.role.RoleDTO;
 import com.posthub.iam_service.model.enums.RegistrationStatus;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record UserDTO(
-        Integer id,
-        String username,
-        String email,
-        LocalDateTime created,
-        LocalDateTime lastLogin,
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDTO implements Serializable {
 
-        RegistrationStatus registrationStatus
-) implements Serializable {
+    private Integer id;
+    private String username;
+    private String email;
+    private LocalDateTime created;
+    private LocalDateTime lastLogin;
+
+    private RegistrationStatus registrationStatus;
+    private List<RoleDTO> roles;
+
 }
