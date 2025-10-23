@@ -8,8 +8,9 @@ import com.posthub.iam_service.model.request.user.UserSearchRequest;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
-public interface UserService {
+public interface UserService extends UserDetailsService {
 
     UserDTO getById(@NotNull Integer userId);
 
