@@ -4,6 +4,8 @@ import com.posthub.iam_service.model.entity.Role;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.service.model.AuthenticationConstants;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +24,9 @@ public class JwtTokenProvider {
     private final SecretKey secretKey;
     private final Long jwtValidityInMilliseconds;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") SecretKey secretKey,
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
                             @Value("${jwt.expiration}") Long jwtValidityInMilliseconds) {
-        this.secretKey = secretKey;
+        this.secretKey = getKey(secretKey);
         this.jwtValidityInMilliseconds = jwtValidityInMilliseconds;
     }
 
@@ -79,6 +81,11 @@ public class JwtTokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    private SecretKey getKey(String secretKey64) {
+        byte[] decode64 = Decoders.BASE64.decode(secretKey64);
+        return Keys.hmacShaKeyFor(decode64);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {

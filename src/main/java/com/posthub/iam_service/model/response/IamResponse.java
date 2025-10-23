@@ -1,5 +1,6 @@
 package com.posthub.iam_service.model.response;
 
+import com.posthub.iam_service.model.constants.ApiMessage;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -20,5 +21,9 @@ public record IamResponse<R extends Serializable>(
     
     public static <R extends Serializable> IamResponse<R> createWithError(String message) {
         return new IamResponse<>(message, null, false);
+    }
+
+    public static <R extends Serializable> IamResponse<R> createSuccessfulWithNewToken(R payload) {
+        return new IamResponse<>(ApiMessage.TOKEN_CREATED_OR_UPDATED.getMessage(), payload, true);
     }
 }
