@@ -43,15 +43,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         Optional<String> authHeader = Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER));
-        String requestURI = request.getRequestURI();
 
         if (authHeader.isPresent() && authHeader.get().startsWith(BEARER_PREFIX)) {
             String jwt = authHeader.get().substring(BEARER_PREFIX.length());
-            try {
-                if (!jwtTokenProvider.validateToken(jwt)) {
-                    throw new ExpiredJwtException(null, null, ApiErrorMessage.TOKEN_EXPIRED.getMessage());
-                }
 
+            try {
+                jwtTokenProvider.validateToken(jwt);
                 Optional<String> emailOpt = Optional.ofNullable(jwtTokenProvider.getEmail(jwt));
                 emailOpt.ifPresent(email -> {
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -67,45 +64,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     }
                 });
-
-            } catch (ExpiredJwtException e) {
-                handleTokenExpiration(requestURI, jwt, response);
-                return;
-            } catch (SignatureException | MalformedJwtException e) {
-                handleSignatureException(response);
-                return;
-            } catch (Exception e) {
-                handleUnexpectedException(response, e);
-                return;
+            } catch (RuntimeException e) {
+                throw e;
             }
         }
         filterChain.doFilter(request, response);
-    }
-
-    private void handleTokenExpiration(String requestURI, String jwt, HttpServletResponse response) throws IOException {
-        if (isAuthEndpoint(requestURI)) {
-            String refreshedToken = jwtTokenProvider.refreshToken(jwt);
-            response.setHeader(AUTHORIZATION_HEADER, BEARER_PREFIX + refreshedToken);
-        } else {
-            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, ApiErrorMessage.TOKEN_EXPIRED.getMessage());
-        }
-    }
-
-    private void handleSignatureException(HttpServletResponse response) throws IOException {
-        sendErrorResponse(response, HttpStatus.UNAUTHORIZED, ApiErrorMessage.INVALID_TOKEN_SIGNATURE.getMessage());
-    }
-
-    private void handleUnexpectedException(HttpServletResponse response, Exception e) throws IOException {
-        log.error(ApiErrorMessage.ERROR_DURING_JWT_PROCESSING.getMessage(), e);
-        sendErrorResponse(response, HttpStatus.INTERNAL_SERVER_ERROR, ApiErrorMessage.UNEXPECTED_ERROR_OCCURRED.getMessage());
-    }
-
-    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setStatus(status.value());
-        response.getWriter().write(message);
-    }
-
-    private boolean isAuthEndpoint(String uri) {
-        return uri.equals(LOGIN_PATH) || uri.equals(REGISTER_PATH);
     }
 }
