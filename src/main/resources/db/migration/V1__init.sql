@@ -45,13 +45,13 @@ CREATE TABLE users_roles
 );
 
 INSERT INTO users(username, password, email, created_at, updated_at, registration_status, last_login, deleted)
-VALUES ('super_admin', '$2a$10$N459zip3LOMVcCNHyd7dje6WguRW1zimIq9dKs/b5ZUwulKcerpWq', 'super_admin@gmail.com',
+VALUES ('super_admin', '$2a$10$81gt1IWoqOPyJ.vRDYu3TOeo.vZSkcZhjCCbT/3ALcRP2yvcMrouq', 'super_admin@gmail.com',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false),
-       ('admin', '$2a$10$S5fYHpwFWRdleD31JMUGh.77G7Wz/2Eo8WZDxmNveNN2absBw81LO', 'admin@gmail.com',
+       ('admin', '$2a$10$DbYM9oZfDy67/F1EMjxnm.2pXCVzqoeq5MJdcjemzk6z5vyiK0iCG', 'admin@gmail.com',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false),
-       ('user', '$2a$10$mstfLshrUuWvJGyZ85DZ8Ov90r8jkKSq5PJSxjoXP5gmlUmedTpw2', 'user@gmail.com',
+       ('user', '$2a$10$anLiQC3pQugMDDELWf/kR.gOi9cYbG7R0qLwrQgx3kUe.dJJ9431S', 'user@gmail.com',
         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACTIVE',
         CURRENT_TIMESTAMP, false);
 

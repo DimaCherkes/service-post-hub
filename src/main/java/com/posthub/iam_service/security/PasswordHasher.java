@@ -6,9 +6,9 @@ public class PasswordHasher {
     public static void main(String[] args) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        String firstPassword = encoder.encode("123");
-        String secondPassword = encoder.encode("123");
-        String thirdPassword = encoder.encode("123");
+        String firstPassword = encoder.encode("password1");
+        String secondPassword = encoder.encode("password2");
+        String thirdPassword = encoder.encode("password3");
 
         System.out.println("First password: " + firstPassword);
         System.out.println("Second password: " + secondPassword);
