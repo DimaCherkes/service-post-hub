@@ -36,7 +36,7 @@ public class JwtTokenProvider {
         claims.put(AuthenticationConstants.USERNAME, user.getUsername());
         claims.put(AuthenticationConstants.USER_EMAIL, user.getEmail());
         claims.put(AuthenticationConstants.USER_REGISTRATION_STATUS, user.getRegistrationStatus());
-        claims.put(AuthenticationConstants.LAST_UPDATE, LocalDateTime.now());
+        claims.put(AuthenticationConstants.LAST_UPDATE, LocalDateTime.now().toString());
 
         List<String> roles = user.getRoles().stream()
                 .map(Role::getName)
@@ -51,16 +51,11 @@ public class JwtTokenProvider {
         return createToken(claims, claims.getSubject());
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
-            return !claims.getBody().getExpiration().before(new Date());
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
+    public void validateToken(String token) {
+        Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
     }
 
     public String getEmail(String token) {
@@ -94,7 +89,7 @@ public class JwtTokenProvider {
                 .setSubject(subject)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtValidityInMilliseconds))
-                .signWith(secretKey, SignatureAlgorithm.ES512)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
     }
 }

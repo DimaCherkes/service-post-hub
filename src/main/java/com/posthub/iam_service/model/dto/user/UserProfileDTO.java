@@ -5,12 +5,13 @@ import com.posthub.iam_service.model.enums.RegistrationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class UserProfileDTO {
+public class UserProfileDTO implements Serializable {
 
     private Integer id;
     private String username;
