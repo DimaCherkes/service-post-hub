@@ -8,5 +8,6 @@ public class ApiConstants {
 
     public static final String UNDEFINED = "undefined";
     public static final String CREATE_SUCCESSFUL = "The Post has been created.";
+    public static final String DASH = "-";
 
 }
