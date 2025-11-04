@@ -8,6 +8,7 @@ import com.posthub.iam_service.model.entity.Role;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.enums.RegistrationStatus;
 import com.posthub.iam_service.model.request.user.NewUserRequest;
+import com.posthub.iam_service.model.request.user.RegistrationUserRequest;
 import com.posthub.iam_service.model.request.user.UpdateUserRequest;
 import org.hibernate.type.descriptor.DateTimeUtils;
 import org.mapstruct.Mapper;
@@ -48,6 +49,11 @@ public interface UserMapper {
     @Mapping(target = "token", source = "token")
     @Mapping(target = "refreshToken", source = "refreshToken")
     UserProfileDTO toUserProfileDTO(User user, String token, String refreshToken);
+
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "registrationStatus", expression = "java(RegistrationStatus.ACTIVE)")
+    User fromDto(RegistrationUserRequest request);
 
     default List<RoleDTO> mapRoles(Collection<Role> roles) {
         return roles.stream()
