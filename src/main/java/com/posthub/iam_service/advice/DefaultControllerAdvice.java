@@ -1,6 +1,8 @@
 package com.posthub.iam_service.advice;
 
 import com.posthub.iam_service.model.exception.DataExistException;
+import com.posthub.iam_service.model.exception.InvalidDataException;
+import com.posthub.iam_service.model.exception.InvalidPasswordException;
 import com.posthub.iam_service.model.exception.NotFoundException;
 import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.security.JwtTokenProvider;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -105,6 +108,13 @@ public class DefaultControllerAdvice {
                 IamResponse.createWithError(ex.getMessage()),
                 HttpStatusCode.valueOf(HttpStatus.UNAUTHORIZED.value())
         );
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public String handleInvalidPasswordException(InvalidPasswordException ex) {
+        return ex.getMessage();
     }
 
     @ExceptionHandler(Exception.class)
