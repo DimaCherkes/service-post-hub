@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @Slf4j
 @RestController
 @Validated
@@ -27,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("${end.point.posts}")
 public class PostController {
 
-    // is it better to return IamResponse or PostDTO from Service?
     private final PostService postService;
 
     @GetMapping("${end.point.id}")
@@ -41,10 +42,10 @@ public class PostController {
 
     @PostMapping("${end.point.create}")
     public ResponseEntity<IamResponse<PostDTO>> createPost(
-            @RequestBody @Valid NewPostRequest newPostRequest) {
+            @RequestBody @Valid NewPostRequest newPostRequest, Principal principal) {
         log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
 
-        PostDTO postDto = postService.createPost(1, newPostRequest);
+        PostDTO postDto = postService.createPost(principal.getName(), newPostRequest);
         return ResponseEntity.ok(IamResponse.createSuccessful(ApiConstants.CREATE_SUCCESSFUL, postDto));
     }
 
