@@ -1,5 +1,6 @@
 package com.posthub.iam_service.advice;
 
+import com.posthub.iam_service.model.exception.CustomAccessDeniedException;
 import com.posthub.iam_service.model.exception.DataExistException;
 import com.posthub.iam_service.model.exception.InvalidPasswordException;
 import com.posthub.iam_service.model.exception.NotFoundException;
@@ -114,6 +115,17 @@ public class DefaultControllerAdvice {
     @ResponseBody
     public String handleInvalidPasswordException(InvalidPasswordException ex) {
         return ex.getMessage();
+    }
+
+    @ExceptionHandler(CustomAccessDeniedException.class)
+    @ResponseBody
+    protected ResponseEntity<? extends Serializable> handleAccessDeniedException(CustomAccessDeniedException ex) {
+        log.warn(ex.getMessage());
+
+        return new ResponseEntity<>(
+                IamResponse.createWithError(ex.getMessage()),
+                HttpStatusCode.valueOf(HttpStatus.FORBIDDEN.value())
+        );
     }
 
     @ExceptionHandler(Exception.class)
