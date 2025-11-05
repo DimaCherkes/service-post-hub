@@ -36,7 +36,7 @@ public class JwtTokenProvider {
         claims.put(AuthenticationConstants.USERNAME, user.getUsername());
         claims.put(AuthenticationConstants.USER_EMAIL, user.getEmail());
         claims.put(AuthenticationConstants.USER_REGISTRATION_STATUS, user.getRegistrationStatus());
-        claims.put(AuthenticationConstants.LAST_UPDATE, LocalDateTime.now());
+        claims.put(AuthenticationConstants.LAST_UPDATE, LocalDateTime.now().toString());
 
         List<String> roles = user.getRoles().stream()
                 .map(Role::getName)
@@ -63,8 +63,9 @@ public class JwtTokenProvider {
         }
     }
 
-    public String getEmail(String token) {
-        return getAllClaimsFromToken(token).getSubject();
+    public String getUserName(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        return claims.get(AuthenticationConstants.USERNAME, String.class);
     }
 
     public List<String> getRoles(String token) {
@@ -94,7 +95,7 @@ public class JwtTokenProvider {
                 .setSubject(subject)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtValidityInMilliseconds))
-                .signWith(secretKey, SignatureAlgorithm.ES512)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
     }
 }

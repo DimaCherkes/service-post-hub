@@ -18,7 +18,6 @@ import com.posthub.iam_service.repository.UserRepository;
 import com.posthub.iam_service.repository.criteria.PostSearchCriteria;
 import com.posthub.iam_service.service.PostService;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,14 +42,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDTO createPost(@NonNull Integer userId, @NotNull NewPostRequest newPostRequest) {
+    public PostDTO createPost(@NotNull String username, @NotNull NewPostRequest newPostRequest) {
         if (postRepository.existsByTitle(newPostRequest.getTitle()))
             throw new DataExistException(ApiErrorMessage.POST_ALREADY_EXISTS.getMessage(newPostRequest.getTitle()));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new DataExistException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage()));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new DataExistException(ApiErrorMessage.USERNAME_NOT_FOUND.getMessage(username)));
 
-        Post post = postMapper.createPost(newPostRequest, user);
+        Post post = postMapper.createPost(newPostRequest);
+        post.setUser(user);
+        post.setCreatedBy(username);
+
         Post savedPost = postRepository.save(post);
         return postMapper.toPostDTO(savedPost);
     }
