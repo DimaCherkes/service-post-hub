@@ -1,7 +1,6 @@
 package com.posthub.iam_service.advice;
 
 import com.posthub.iam_service.model.exception.DataExistException;
-import com.posthub.iam_service.model.exception.InvalidDataException;
 import com.posthub.iam_service.model.exception.InvalidPasswordException;
 import com.posthub.iam_service.model.exception.NotFoundException;
 import com.posthub.iam_service.model.response.IamResponse;
