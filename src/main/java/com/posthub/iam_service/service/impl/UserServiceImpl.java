@@ -15,6 +15,7 @@ import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.repository.RoleRepository;
 import com.posthub.iam_service.repository.UserRepository;
 import com.posthub.iam_service.repository.criteria.UserSearchCriteria;
+import com.posthub.iam_service.security.validation.AccessValidator;
 import com.posthub.iam_service.service.UserService;
 import com.posthub.iam_service.service.model.IamServiceUserRole;
 import jakarta.transaction.Transactional;
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final AccessValidator accessValidator;
 
     @Override
     @Transactional
@@ -80,6 +82,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
 
+        if (userRepository.existsByUsername(request.getUsername()))
+            throw new DataExistException(ApiErrorMessage.USERNAME_ALREADY_EXISTS.getMessage(request.getUsername()));
+
+        if (userRepository.existsByEmail(request.getEmail()))
+            throw new DataExistException(ApiErrorMessage.EMAIL_ALREADY_EXISTS.getMessage(request.getEmail()));
+
+        accessValidator.validateAdminOrOwnerAccess(userId);
+
         userMapper.updateUser(user, request);
         user.setUpdatedAt(LocalDateTime.now());
         user = userRepository.save(user);
@@ -92,6 +102,8 @@ public class UserServiceImpl implements UserService {
     public void softDeleteUser(Integer userId) {
         User user = userRepository.findByIdAndDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ApiErrorMessage.USER_NOT_FOUND_BY_ID.getMessage(userId)));
+
+        accessValidator.validateAdminOrOwnerAccess(userId);
 
         user.setDeleted(true);
         userRepository.save(user);
