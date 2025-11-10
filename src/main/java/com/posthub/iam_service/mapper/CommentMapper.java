@@ -5,10 +5,12 @@ import com.posthub.iam_service.model.entity.Comment;
 import com.posthub.iam_service.model.entity.Post;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.request.comment.CommentRequest;
+import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
 import com.posthub.iam_service.repository.CommentRepository;
 import org.hibernate.type.descriptor.DateTimeUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(
@@ -32,4 +34,13 @@ public interface CommentMapper {
     @Mapping(target = "post", source = "post")
     @Mapping(target = "createdBy", source = "user.email")
     Comment createComment(CommentRequest commentRequest, User user, Post post);
+
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "created", ignore = true)
+    @Mapping(target = "updated", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    void updateComment(@MappingTarget Comment comment, UpdateCommentRequest request);
+
 }
