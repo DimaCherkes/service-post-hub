@@ -9,6 +9,8 @@ import lombok.Getter;
 public enum ApiMessage {
     TOKEN_CREATED_OR_UPDATED("User's token has been created or updated"),
     USER_CREATED_OR_UPDATED("User has been created or updated"),
+    USER_LOGIN_SUCCESSFUL("User has been logged in"),
+    COMMENT_UPDATED("Comment has been updated"),
     ;
 
     private final String message;

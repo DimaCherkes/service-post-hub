@@ -31,7 +31,7 @@ public class AuthController {
         log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
 
         UserProfileDTO userProfileDTO = authService.login(request);
-        IamResponse<UserProfileDTO> result = IamResponse.createSuccessful(ApiMessage.USER_CREATED_OR_UPDATED.getMessage(), userProfileDTO);
+        IamResponse<UserProfileDTO> result = IamResponse.createSuccessful(ApiMessage.USER_LOGIN_SUCCESSFUL.getMessage(), userProfileDTO);
         Cookie authorizationCookie = ApiUtils.createAuthCookie(result.payload().getToken());
 
         HttpHeaders headers = new HttpHeaders();
