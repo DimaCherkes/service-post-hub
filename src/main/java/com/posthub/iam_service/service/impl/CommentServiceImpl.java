@@ -3,12 +3,15 @@ package com.posthub.iam_service.service.impl;
 import com.posthub.iam_service.mapper.CommentMapper;
 import com.posthub.iam_service.model.constants.ApiErrorMessage;
 import com.posthub.iam_service.model.dto.comment.CommentDTO;
+import com.posthub.iam_service.model.dto.comment.CommentSearchDTO;
 import com.posthub.iam_service.model.entity.Comment;
 import com.posthub.iam_service.model.entity.Post;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.exception.NotFoundException;
-import com.posthub.iam_service.model.request.comment.CommentRequest;
+import com.posthub.iam_service.model.request.comment.NewCommentRequest;
 import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
+import com.posthub.iam_service.model.response.IamResponse;
+import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.repository.CommentRepository;
 import com.posthub.iam_service.repository.PostRepository;
 import com.posthub.iam_service.repository.UserRepository;
@@ -17,6 +20,8 @@ import com.posthub.iam_service.service.CommentService;
 import com.posthub.iam_service.utils.ApiUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -39,7 +44,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDTO createComment(CommentRequest request) {
+    public CommentDTO createComment(NewCommentRequest request) {
         Integer userId = apiUtils.getUserIdFromAuthentication();
 
         User user = userRepository.findById(userId)
@@ -84,6 +89,24 @@ public class CommentServiceImpl implements CommentService {
 
         comment.setDeleted(true);
         commentRepository.save(comment);
+    }
+
+    @Override
+    public IamResponse<PaginationResponse<CommentSearchDTO>> findAll(Pageable pageable) {
+        Page<CommentSearchDTO> comments = commentRepository.findAll(pageable)
+                .map(commentMapper::toCommentSearchDto);
+
+        PaginationResponse<CommentSearchDTO> paginationResponse = new PaginationResponse<>(
+                comments.getContent(),
+                new PaginationResponse.Pagination(
+                        comments.getTotalElements(),
+                        pageable.getPageSize(),
+                        comments.getNumber() + 1,
+                        comments.getTotalPages()
+                )
+        );
+
+        return IamResponse.createSuccessful(paginationResponse);
     }
 
 }
