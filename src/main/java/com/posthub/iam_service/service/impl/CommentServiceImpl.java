@@ -8,6 +8,7 @@ import com.posthub.iam_service.model.entity.Comment;
 import com.posthub.iam_service.model.entity.Post;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.exception.NotFoundException;
+import com.posthub.iam_service.model.request.comment.CommentSearchRequest;
 import com.posthub.iam_service.model.request.comment.NewCommentRequest;
 import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
 import com.posthub.iam_service.model.response.IamResponse;
@@ -15,6 +16,7 @@ import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.repository.CommentRepository;
 import com.posthub.iam_service.repository.PostRepository;
 import com.posthub.iam_service.repository.UserRepository;
+import com.posthub.iam_service.repository.criteria.CommentSearchCriteria;
 import com.posthub.iam_service.security.validation.AccessValidator;
 import com.posthub.iam_service.service.CommentService;
 import com.posthub.iam_service.utils.ApiUtils;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -107,6 +110,26 @@ public class CommentServiceImpl implements CommentService {
         );
 
         return IamResponse.createSuccessful(paginationResponse);
+    }
+
+    @Override
+    public IamResponse<PaginationResponse<CommentSearchDTO>> searchComments(CommentSearchRequest request, Pageable pageable) {
+        Specification<Comment> specification = new CommentSearchCriteria(request);
+
+        Page<CommentSearchDTO> commentsPage = commentRepository.findAll(specification, pageable)
+                .map(commentMapper::toCommentSearchDto);
+
+        PaginationResponse<CommentSearchDTO> response = PaginationResponse.<CommentSearchDTO>builder()
+                .content(commentsPage.getContent())
+                .pagination((PaginationResponse.Pagination.builder()
+                        .total(commentsPage.getTotalElements())
+                        .limit(pageable.getPageSize())
+                        .page(commentsPage.getNumber() + 1)
+                        .pages(commentsPage.getTotalPages())
+                        .build()))
+                .build();
+
+        return IamResponse.createSuccessful(response);
     }
 
 }

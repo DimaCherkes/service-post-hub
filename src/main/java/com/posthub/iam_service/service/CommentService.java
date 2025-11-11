@@ -2,6 +2,7 @@ package com.posthub.iam_service.service;
 
 import com.posthub.iam_service.model.dto.comment.CommentDTO;
 import com.posthub.iam_service.model.dto.comment.CommentSearchDTO;
+import com.posthub.iam_service.model.request.comment.CommentSearchRequest;
 import com.posthub.iam_service.model.request.comment.NewCommentRequest;
 import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
 import com.posthub.iam_service.model.response.IamResponse;
@@ -20,5 +21,7 @@ public interface CommentService {
     void softDelete(@NotNull Integer id);
 
     IamResponse<PaginationResponse<CommentSearchDTO>> findAll(Pageable pageable);
+
+    IamResponse<PaginationResponse<CommentSearchDTO>> searchComments(@NotNull CommentSearchRequest request, Pageable pageable);
 
 }
