@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentRequest {
+public class NewCommentRequest {
 
     @NotNull(message = "Post ID cannot be null")
     private Integer postId;

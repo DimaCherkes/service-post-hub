@@ -3,14 +3,21 @@ package com.posthub.iam_service.controller;
 import com.posthub.iam_service.model.constants.ApiLogMessage;
 import com.posthub.iam_service.model.constants.ApiMessage;
 import com.posthub.iam_service.model.dto.comment.CommentDTO;
-import com.posthub.iam_service.model.request.comment.CommentRequest;
+import com.posthub.iam_service.model.dto.comment.CommentSearchDTO;
+import com.posthub.iam_service.model.dto.post.PostSearchDTO;
+import com.posthub.iam_service.model.request.comment.CommentSearchRequest;
+import com.posthub.iam_service.model.request.comment.NewCommentRequest;
 import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
+import com.posthub.iam_service.model.request.post.PostSearchRequest;
 import com.posthub.iam_service.model.response.IamResponse;
+import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.service.CommentService;
 import com.posthub.iam_service.utils.ApiUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +41,7 @@ public class CommentController {
 
     @PostMapping("${end.point.create}")
     public ResponseEntity<IamResponse<CommentDTO>> createComment(
-            @RequestBody @Valid CommentRequest request) {
+            @RequestBody @Valid NewCommentRequest request) {
         log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
         CommentDTO commentDto = commentService.createComment(request);
 
@@ -49,6 +56,38 @@ public class CommentController {
         CommentDTO commentDto = commentService.updateComment(id, request);
 
         return ResponseEntity.ok(IamResponse.createSuccessful(ApiMessage.COMMENT_UPDATED.getMessage(), commentDto));
+    }
+
+    @DeleteMapping("${end.point.id}")
+    public ResponseEntity<Void> softDeleteById(
+            @PathVariable(name = "id") Integer commentId) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
+
+        commentService.softDelete(commentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("${end.point.all}")
+    ResponseEntity<IamResponse<PaginationResponse<CommentSearchDTO>>> getAll(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
+
+        Pageable pageable = PageRequest.of(page, limit);
+        IamResponse<PaginationResponse<CommentSearchDTO>> response = commentService.findAll(pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("${end.point.search}")
+    public ResponseEntity<IamResponse<PaginationResponse<CommentSearchDTO>>> searchPosts(
+            @RequestBody @Valid CommentSearchRequest request,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+        log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
+
+        Pageable pageable = PageRequest.of(page, limit);
+        IamResponse<PaginationResponse<CommentSearchDTO>> response = commentService.searchComments(request, pageable);
+        return ResponseEntity.ok(response);
     }
 
 }
