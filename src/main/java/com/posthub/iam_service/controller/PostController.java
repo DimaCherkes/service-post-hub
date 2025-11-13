@@ -11,6 +11,7 @@ import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.service.PostService;
 import com.posthub.iam_service.utils.ApiUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import java.security.Principal;
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("${end.point.posts}")
+@Tag(name = "Post Controller", description = "Endpoints for post management")
 public class PostController {
 
     private final PostService postService;

@@ -4,15 +4,14 @@ import com.posthub.iam_service.model.constants.ApiLogMessage;
 import com.posthub.iam_service.model.constants.ApiMessage;
 import com.posthub.iam_service.model.dto.comment.CommentDTO;
 import com.posthub.iam_service.model.dto.comment.CommentSearchDTO;
-import com.posthub.iam_service.model.dto.post.PostSearchDTO;
 import com.posthub.iam_service.model.request.comment.CommentSearchRequest;
 import com.posthub.iam_service.model.request.comment.NewCommentRequest;
 import com.posthub.iam_service.model.request.comment.UpdateCommentRequest;
-import com.posthub.iam_service.model.request.post.PostSearchRequest;
 import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.service.CommentService;
 import com.posthub.iam_service.utils.ApiUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,8 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/comments")
+@RequestMapping("${end.point.comments}")
+@Tag(name = "Comment Controller", description = "Endpoints for comment management")
 public class CommentController {
     private final CommentService commentService;
 
