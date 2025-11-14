@@ -34,10 +34,15 @@ public class SecurityConfig {
     private static final String GET = "GET";
     private static final String POST = "POST";
 
-    private static final AntPathRequestMatcher[] NOT_SECURED_URLS = new AntPathRequestMatcher[] {
+    private static final AntPathRequestMatcher[] NOT_SECURED_URLS = new AntPathRequestMatcher[]{
             new AntPathRequestMatcher("/auth/login", POST),
             new AntPathRequestMatcher("/auth/register", POST),
             new AntPathRequestMatcher("/auth/refresh/token", GET),
+
+            new AntPathRequestMatcher("/v3/api-docs/**"),
+            new AntPathRequestMatcher("/swagger-ui/**"),
+            new AntPathRequestMatcher("/swagger-ui.html"),
+            new AntPathRequestMatcher("/webjars/**"),
     };
 
     @Bean
@@ -70,7 +75,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider(UserService userService){
+    public DaoAuthenticationProvider daoAuthenticationProvider(UserService userService) {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userService);
@@ -83,14 +88,14 @@ public class SecurityConfig {
     }
 
     private String[] adminAccessSecurityRoles() {
-        return new String[] {
+        return new String[]{
                 IamServiceUserRole.SUPER_ADMIN.name(),
                 IamServiceUserRole.ADMIN.name()
         };
     }
 
     private static AntPathRequestMatcher get(String pattern) {
-         return new AntPathRequestMatcher(pattern, GET);
+        return new AntPathRequestMatcher(pattern, GET);
     }
 
     private static AntPathRequestMatcher post(String pattern) {

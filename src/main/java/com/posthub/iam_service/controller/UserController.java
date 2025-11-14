@@ -10,6 +10,7 @@ import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.model.response.PaginationResponse;
 import com.posthub.iam_service.service.UserService;
 import com.posthub.iam_service.utils.ApiUtils;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("${end.point.users}")
+@Tag(name = "User Controller", description = "Endpoints for user management")
 public class UserController {
 
     private final UserService userService;
