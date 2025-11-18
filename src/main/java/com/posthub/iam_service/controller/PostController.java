@@ -44,10 +44,10 @@ public class PostController {
 
     @PostMapping("${end.point.create}")
     public ResponseEntity<IamResponse<PostDTO>> createPost(
-            @RequestBody @Valid NewPostRequest newPostRequest, Principal principal) {
+            @RequestBody @Valid NewPostRequest newPostRequest) {
         log.trace(ApiLogMessage.NAME_OF_CURRENT_METHOD.getValue(), ApiUtils.getMethodName());
 
-        PostDTO postDto = postService.createPost(principal.getName(), newPostRequest);
+        PostDTO postDto = postService.createPost(newPostRequest);
         return ResponseEntity.ok(IamResponse.createSuccessful(ApiConstants.CREATE_SUCCESSFUL, postDto));
     }
 
