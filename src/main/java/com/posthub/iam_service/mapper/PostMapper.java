@@ -25,7 +25,11 @@ public interface PostMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    Post createPost(NewPostRequest newPostRequest);
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "createdBy", source = "createdBy")
+    Post createPost(NewPostRequest newPostRequest, User user, String createdBy);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
