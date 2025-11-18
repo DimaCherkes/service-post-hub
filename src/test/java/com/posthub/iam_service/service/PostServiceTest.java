@@ -4,6 +4,8 @@ import com.posthub.iam_service.mapper.PostMapper;
 import com.posthub.iam_service.model.dto.post.PostDTO;
 import com.posthub.iam_service.model.entity.Post;
 import com.posthub.iam_service.model.entity.User;
+import com.posthub.iam_service.model.exception.NotFoundException;
+import com.posthub.iam_service.model.request.post.NewPostRequest;
 import com.posthub.iam_service.repository.PostRepository;
 import com.posthub.iam_service.repository.UserRepository;
 import com.posthub.iam_service.service.impl.PostServiceImpl;
@@ -15,12 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -71,7 +73,47 @@ public class PostServiceTest {
         PostDTO result = postService.getById(1);
 
         assertNotNull(result);
+        assertEquals(result.getId(), testPostDTO.getId());
+        assertEquals(result.getTitle(), testPostDTO.getTitle());
+        assertEquals(result.getContent(), testPostDTO.getContent());
 
+        verify(postRepository, times(1)).findByIdAndDeletedFalse(1);
+        verify(postMapper, times(1)).toPostDTO(testPost);
+    }
+
+    @Test
+    void getById_PostNotFound_ThrowsException() {
+        when(postRepository.findByIdAndDeletedFalse(999)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.getById(999))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("not found");
+
+        verify(postRepository, times(1)).findByIdAndDeletedFalse(999);
+        verify(postMapper, never()).toPostDTO(any(Post.class));
+    }
+
+    @Test
+    void createPost_OK() {
+        NewPostRequest request = new NewPostRequest("New Title", "New Content", 100);
+
+        when(apiUtils.getUserIdFromAuthentication()).thenReturn(testUser.getId());
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        when(postRepository.save(any(Post.class))).thenReturn(testPost);
+        when(postMapper.createPost(request, testUser, testUser.getUsername())).thenReturn(testPost);
+        when(postMapper.toPostDTO(testPost)).thenReturn(testPostDTO);
+
+        PostDTO result = postService.createPost(request);
+
+        assertNotNull(result);
+        assertEquals(testPostDTO.getId(), result.getId());
+        assertEquals(testPostDTO.getContent(), result.getContent());
+
+        verify(apiUtils, times(1)).getUserIdFromAuthentication();
+        verify(userRepository, times(1)).findById(testUser.getId());
+        verify(postRepository, times(1)).save(any(Post.class));
+        verify(postMapper, times(1)).createPost(request, testUser, testUser.getUsername());
+        verify(postMapper, times(1)).toPostDTO(any(Post.class));
     }
 
 }
