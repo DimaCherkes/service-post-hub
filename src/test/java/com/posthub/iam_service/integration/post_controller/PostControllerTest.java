@@ -1,16 +1,20 @@
 package com.posthub.iam_service.integration.post_controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.posthub.iam_service.IamServiceApplication;
+import com.posthub.iam_service.model.dto.post.PostDTO;
 import com.posthub.iam_service.model.entity.User;
 import com.posthub.iam_service.model.exception.InvalidDataException;
 import com.posthub.iam_service.model.request.post.NewPostRequest;
 import com.posthub.iam_service.model.request.post.UpdatePostRequest;
+import com.posthub.iam_service.model.response.IamResponse;
 import com.posthub.iam_service.repository.UserRepository;
 import com.posthub.iam_service.security.JwtTokenProvider;
 import lombok.Setter;
 import org.hibernate.Hibernate;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -24,11 +28,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.web.servlet.function.RequestPredicates.accept;
+import java.io.IOException;
+import java.util.Objects;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -75,13 +81,23 @@ public class PostControllerTest {
     void createPost_OK_200() throws Exception {
         NewPostRequest request = new NewPostRequest("Simple Title", "Simple content", 50);
 
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult requestResult = mockMvc.perform(MockMvcRequestBuilders
                         .post("/posts/create")
                         .header(HttpHeaders.AUTHORIZATION, currentJwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        IamResponse<PostDTO> response = parsePostDTOResponse(requestResult.getResponse().getContentAsByteArray());
+
+        PostDTO resultBody = Objects.nonNull(response.payload()) ? response.payload() : null;
+        Assertions.assertTrue(response.success());
+        Assertions.assertNotNull(resultBody);
+        Assertions.assertEquals(request.getTitle(), resultBody.getTitle());
+        Assertions.assertEquals(request.getContent(), resultBody.getContent());
+        Assertions.assertEquals(request.getLikes(), resultBody.getLikes());
     }
 
     @Test
@@ -89,13 +105,23 @@ public class PostControllerTest {
     void updatePost_OK_200() throws Exception {
         UpdatePostRequest request = new UpdatePostRequest("Updated Title", "Updated content", 50);
 
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult requestResult = mockMvc.perform(MockMvcRequestBuilders
                         .put("/posts/1")
                         .header(HttpHeaders.AUTHORIZATION, currentJwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        IamResponse<PostDTO> response = parsePostDTOResponse(requestResult.getResponse().getContentAsByteArray());
+
+        PostDTO resultBody = Objects.nonNull(response.payload()) ? response.payload() : null;
+        Assertions.assertTrue(response.success());
+        Assertions.assertNotNull(resultBody);
+        Assertions.assertEquals(request.getTitle(), resultBody.getTitle());
+        Assertions.assertEquals(request.getContent(), resultBody.getContent());
+        Assertions.assertEquals(request.getLikes(), resultBody.getLikes());
     }
 
     @Test
@@ -108,4 +134,13 @@ public class PostControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    private IamResponse<PostDTO> parsePostDTOResponse(byte[] contentAsByteArray) {
+        try {
+            objectMapper.registerModule(new JavaTimeModule());
+            JavaType javaType = objectMapper.getTypeFactory().constructParametricType(IamResponse.class, PostDTO.class);
+            return objectMapper.readValue(contentAsByteArray, javaType);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
