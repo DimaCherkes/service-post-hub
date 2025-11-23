@@ -1,4 +1,4 @@
-package com.posthub.iam_service.integration.user_controller;
+package com.posthub.iam_service.integration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

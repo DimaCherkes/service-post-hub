@@ -1,4 +1,4 @@
-package com.posthub.iam_service.integration.post_controller;
+package com.posthub.iam_service.integration;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
