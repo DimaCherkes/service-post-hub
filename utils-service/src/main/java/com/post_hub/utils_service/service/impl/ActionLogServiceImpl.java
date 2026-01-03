@@ -1,12 +1,16 @@
-package com.post_hub.utils_service.service;
+package com.post_hub.utils_service.service.impl;
 
 import com.post_hub.utils_service.entity.ActionLog;
 import com.post_hub.utils_service.mapper.ActionLogMapper;
 import com.post_hub.utils_service.model.constant.ApiErrorMessage;
 import com.post_hub.utils_service.model.dto.ActionLogDTO;
 import com.post_hub.utils_service.model.exception.NotFoundException;
+import com.post_hub.utils_service.model.response.PaginationResponse;
 import com.post_hub.utils_service.repository.ActionLogRepository;
+import com.post_hub.utils_service.service.ActionLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +33,23 @@ public class ActionLogServiceImpl implements ActionLogService {
         }
 
         return mapper.toDto(actionLog);
+    }
+
+    @Override
+    public PaginationResponse<ActionLogDTO> findAll(Pageable pageable) {
+
+        Page<ActionLogDTO> logs = repository.findAll(pageable)
+                .map(mapper::toDto);
+
+        return new PaginationResponse<>(
+                logs.stream().toList(),
+                new PaginationResponse.Pagination(
+                        logs.getTotalElements(),
+                        pageable.getPageSize(),
+                        pageable.getPageNumber() + 1,
+                        logs.getTotalPages()
+                )
+        );
     }
 
 }
