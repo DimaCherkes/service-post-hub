@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: database-post-hub
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: iam_db
+    volumes:
+      - docker_postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d iam_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - post-hub-network
+
+  iam-service-post-hub:
+    build:
+      context: ./iam_service
+      dockerfile: docker/Dockerfile
+    container_name: iam-service-post-hub
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/iam_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+    ports:
+      - "8189:8189"
+    networks:
+      - post-hub-network
+
+  utils-service-post-hub:
+    build:
+      context: ./utils-service
+      dockerfile: docker/Dockerfile
+    container_name: utils-service-post-hub
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/iam_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+    ports:
+      - "8185:8185"
+    networks:
+      - post-hub-network
+
+volumes:
+  docker_postgres-data:
+    external: true
+
+networks:
+  post-hub-network:
