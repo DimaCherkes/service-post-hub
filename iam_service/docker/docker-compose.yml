@@ -1,5 +1,6 @@
 version: '3.8'
 
+# this docker-compose is deprecated
 services:
   postgres-db:
     image: postgres:15-alpine

@@ -1,112 +1,59 @@
 # IAM Service
 
-## Project Overview
+## Service Overview
 
-This project is a Java-based Identity and Access Management (IAM) service built with Spring Boot. It provides functionalities for user authentication, authorization, and management. The service uses JSON Web Tokens (JWT) for securing API endpoints and PostgreSQL as its database.
+The **IAM (Identity and Access Management) Service** is the core component of the Service Post Hub platform. It acts as the primary backend for user management, authentication, and the main content domain (Posts and Comments).
 
-**Key Technologies:**
+## Core Responsibilities
 
-*   **Backend:** Spring Boot 3.5.6, Java 21
-*   **Database:** PostgreSQL
-*   **Authentication:** Spring Security, JWT
-*   **Database Migration:** Flyway
-*   **API Documentation:** SpringDoc OpenAPI
+*   **Authentication & Authorization:**
+    *   Implements secure access using **JWT (JSON Web Tokens)**.
+    *   Manages User Registration, Login, and Token Refresh flows.
+    *   Enforces Role-Based Access Control (RBAC) with roles: `SUPER_ADMIN`, `ADMIN`, `USER`.
+*   **User Management:**
+    *   Full CRUD operations for User profiles.
+    *   Soft-delete functionality for users.
+*   **Content Management:**
+    *   Management of **Posts**: Create, Read, Update, Delete (CRUD) and Search.
+    *   Management of **Comments**: Create, Read, Update, Delete (CRUD) and Search.
 
-**Architecture:**
+## Key Entities
 
-The application follows a standard Spring Boot project structure. It includes:
+*   **User:** Stores credentials (hashed), profile info, and registration status.
+*   **Role:** Defines system permissions (e.g., `ROLE_USER`, `ROLE_ADMIN`).
+*   **Post:** User-generated content with title and body.
+*   **Comment:** Feedback attached to posts.
+*   **RefreshToken:** Secure persistence for maintaining long-term sessions.
 
-*   **Controllers:** Handle incoming HTTP requests and delegate to services.
-*   **Services:** Contain the business logic of the application.
-*   **Repositories:** Interact with the database using Spring Data JPA.
-*   **Models:** Define the data structures (DTOs, entities).
-*   **Security:**  Configuration for JWT-based authentication and authorization.
+## Configuration
 
-## Building and Running the Project
+### Database
+The service connects to the `iam_db` database but restricts its operations to the **`v1_iam_service`** schema. Migration scripts are handled by Flyway in `src/main/resources/db/migration`.
 
-To build and run the project, you need to have Java 21 and Maven installed.
+### Application Properties
+Key configuration parameters are in `application.properties`:
 
-### Building
-
-To build the project and create an executable JAR file, run the following command in the project's root directory:
-
-```bash
-mvn clean install
-```
-
-This will generate a JAR file in the `target` directory.
-
-### Running
-
-To run the application, you can use the following command:
-
-```bash
-java -jar target/iam_service-0.0.1-SNAPSHOT.jar
-```
-
-Alternatively, you can use the Spring Boot Maven plugin to run the application directly:
-
-```bash
-mvn spring-boot:run
-```
-
-The application will start on port `8189` by default.
-
-### Docker
-
-The project includes a `Dockerfile` and `docker-compose.yml` for running the application in a Docker container.
-
-To build and run the application with Docker, use the following commands:
-
-```bash
-docker-compose up --build
-```
-
-## Development Conventions
-
-### API Documentation
-
-The project uses SpringDoc OpenAPI to generate API documentation. Once the application is running, you can access the Swagger UI at the following URL:
-
-[http://localhost:8189/swagger-ui.html](http://localhost:8189/swagger-ui.html)
-
-### Database Migrations
-
-The project uses Flyway for database migrations. The migration scripts are located in the `src/main/resources/db/migration` directory. Flyway will automatically apply the migrations when the application starts.
-
-### Logging
-
-The application uses SLF4J for logging. The logging configuration can be found in the `src/main/resources/application.properties` file. By default, the root logging level is set to `INFO`.
-
-## Database Schema
-
-The database schema is managed by Flyway and the initial schema is defined in the `V1__init.sql` and `V2__add_comments_logic.sql` files. The main tables are:
-
-*   **users:** Stores user information, including username, password, and email.
-*   **posts:** Stores blog posts created by users.
-*   **comments:** Stores comments on posts.
-*   **roles:** Defines the roles available in the system (e.g., SUPER_ADMIN, ADMIN, USER).
-*   **users_roles:** A join table that maps users to their roles.
-*   **refresh_tokens:** Stores refresh tokens for users.
+*   `server.port`: **8189**
+*   `jwt.secret`: Secret key for signing tokens.
+*   `jwt.lifetime`: Access token validity duration.
+*   `jwt.expiration`: Refresh token validity duration.
 
 ## API Endpoints
 
-The service exposes the following API endpoints:
+The service exposes a comprehensive REST API documented via Swagger/OpenAPI.
 
 ### Authentication
-
 *   **POST /auth/login:** Authenticate the user and returns an access/refresh token.
 *   **GET /auth/refresh/token:** Generates new access token using provided refresh token.
 *   **POST /auth/register:** Creates new user and returns authentication details.
 
 ### User Management
-
-*   **GET /users/{id}:** Get a user by their ID.
-*   **POST /users/create:** Create a new user.
-*   **PUT /users/{id}:** Update an existing user.
-*   **DELETE /users/{id}:** Soft delete a user.
-*   **GET /users/all:** Get a paginated list of all users.
-*   **POST /users/search:** Search for users based on specified criteria.
+* **GET /users/{id}:** Get a user by their ID.
+* **POST /users/create:** Create a new user.
+* **PUT /users/{id}:** Update an existing user.
+* **DELETE /users/{id}:** Soft delete a user.
+* **GET /users/all:** Get a paginated list of all users.
+* **POST /users/search:** Search for users based on specified criteria
 
 ### Post Management
 
