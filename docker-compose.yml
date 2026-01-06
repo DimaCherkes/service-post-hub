@@ -36,6 +36,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-post-hub:29092
     ports:
       - "8189:8189"
+#    restart: always
     networks:
       - post-hub-network
 
@@ -52,8 +53,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-post-hub:29092
     ports:
       - "8185:8185"
+    restart: always
     networks:
       - post-hub-network
 
