@@ -61,7 +61,11 @@ The easiest way to run the entire system is using Docker Compose.
 3.  **Run with Docker Compose:**
     This will start the PostgreSQL database and both microservices.
     ```bash
-    docker-compose up --build
+    docker-compose up -d --build
+    ```
+    This will start Kafka and Zookeeper. 
+    ```bash
+    docker-compose -f docker-compose-infra.yml up -d 
     ```
 
 ### Accessing the Services
