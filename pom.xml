@@ -15,6 +15,7 @@
     <modules>
         <module>iam_service</module>
         <module>utils-service</module>
+        <module>api-gateway</module>
     </modules>
 
     <properties>
